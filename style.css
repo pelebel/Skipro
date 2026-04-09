@@ -86,7 +86,7 @@ button:active { transform: scale(0.95); }
 }
 
 .live-badge {
-    background: var(--danger);
+    background: var(--bad);
     font-size: 0.6rem;
     padding: 2px 8px;
     border-radius: 10px;

@@ -136,7 +136,7 @@ async function fetchWeatherByCoords(lat, lon, name = "Your Location", country = 
         const data = await weatherRes.json();
 
         document.getElementById('locationName').innerText = `${name}, ${country}`;
-        document.getElementById('liveTemp').innerText = `${convertTemp(data.current.temperature_s_max || data.current.temperature_2m)}°${currentUnit}`;
+        document.getElementById('liveTemp').innerText = `${convertTemp(data.current.temperature_2m)}°${currentUnit}`;
 
         // Extended to 7 days
         for (let i = 0; i < 7; i++) {
