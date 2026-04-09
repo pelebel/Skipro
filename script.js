@@ -25,15 +25,21 @@ function getIcon(code) {
 }
 
 let currentUnit = 'C';
+let cachedWeatherData = null;
+let cachedLocation = null;
 
 function toggleUnits() {
     currentUnit = document.getElementById('unitToggle').checked ? 'F' : 'C';
     document.getElementById('unitLabel').innerText = currentUnit === 'F' ? '°F' : '°C';
-    
-    // If we have weather data displayed, refresh it to update units
-    const locationName = document.getElementById('locationName').innerText;
-    if (locationName !== '---') {
-        getWeather(); 
+
+    // If we have cached data, refresh the display without a new API call
+    if (cachedWeatherData && cachedLocation) {
+        updateWeatherDisplay();
+    } else {
+        const locationName = document.getElementById('locationName').innerText;
+        if (locationName !== '---') {
+            getWeather();
+        }
     }
 }
 
@@ -103,37 +109,48 @@ function autoLocate() {
     }
 }
 
+function updateWeatherDisplay() {
+    const { latitude, longitude, name, country } = cachedLocation;
+    fetchWeatherByCoords(latitude, longitude, name, country, true);
+}
+
 async function getWeather() {
-    const city = document.getElementById('cityInput').value;
+    const city = document.getElementById('cityInput').value.trim();
     if (!city) return;
-    
+
     toggleLoading(true);
     try {
         const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
         const geoData = await geoRes.json();
         if (!geoData.results) throw new Error('City not found');
         const { latitude, longitude, name, country } = geoData.results[0];
-        
+
         localStorage.setItem('lastCity', city);
         fetchWeatherByCoords(latitude, longitude, name, country);
     } catch (e) {
-        showError();
+        showError(e.message || 'Location not found');
         toggleLoading(false);
     }
 }
 
-async function fetchWeatherByCoords(lat, lon, name = "Your Location", country = "") {
+async function fetchWeatherByCoords(lat, lon, name = "Your Location", country = "", isUpdatingUnits = false) {
     const weatherDisplay = document.getElementById('weatherDisplay');
     const forecastList = document.getElementById('forecastList');
     const placeholder = document.getElementById('placeholderText');
-    
-    toggleLoading(true);
+
+    if (!isUpdatingUnits) {
+        toggleLoading(true);
+    }
 
     forecastList.innerHTML = '';
 
     try {
         const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,snowfall_sum,wind_speed_10m_max,relative_humidity_2m_max,weather_code&timezone=auto`);
         const data = await weatherRes.json();
+
+        // Cache the data for unit toggling
+        cachedWeatherData = data;
+        cachedLocation = { latitude: lat, longitude: lon, name: name, country: country };
 
         document.getElementById('locationName').innerText = `${name}, ${country}`;
         document.getElementById('liveTemp').innerText = `${convertTemp(data.current.temperature_2m)}°${currentUnit}`;
@@ -147,7 +164,7 @@ async function fetchWeatherByCoords(lat, lon, name = "Your Location", country = 
         weatherDisplay.style.display = 'block';
         placeholder.style.display = 'none';
     } catch (e) {
-        showError();
+        showError(e.message || 'Weather data unavailable');
     } finally {
         toggleLoading(false);
     }
@@ -199,8 +216,10 @@ function toggleLoading(isLoading) {
     }
 }
 
-function showError() {
-    document.getElementById('errorMsg').style.display = 'block';
+function showError(msg = 'Location not found') {
+    const errorEl = document.getElementById('errorMsg');
+    errorEl.innerText = msg;
+    errorEl.style.display = 'block';
     document.getElementById('weatherDisplay').style.display = 'none';
     document.getElementById('placeholderText').style.display = 'block';
 }
