@@ -27,6 +27,59 @@ function getIcon(code) {
 let currentUnit = 'C';
 let cachedWeatherData = null;
 let cachedLocation = null;
+let currentLang = 'en';
+
+const translations = {
+    en: {
+        welcome: 'Tap "Go" or enter a city to begin.',
+        use_location: '📍 Use My Location',
+        realtime: 'Real-time',
+        live: 'Live',
+        error_not_found: 'Location not found.',
+        search_placeholder: 'Search mountains...',
+        go_btn: 'Go'
+    },
+    es: {
+        welcome: 'Toca "Ir" o introduce una ciudad para empezar.',
+        use_location: '📍 Usar mi ubicación',
+        realtime: 'En tiempo real',
+        live: 'En vivo',
+        error_not_found: 'Ubicación no encontrada.',
+        search_placeholder: 'Buscar montañas...',
+        go_btn: 'Ir'
+    },
+    fr: {
+        welcome: 'Appuyez sur "Rechercher" ou saisissez une ville pour commencer.',
+        use_location: '📍 Utiliser ma position',
+        realtime: 'En temps réel',
+        live: 'En direct',
+        error_not_found: 'Lieu non trouvé.',
+        search_placeholder: 'Rechercher...',
+        go_btn: 'Rechercher'
+    },
+    de: {
+        welcome: 'Tippen Sie auf "Los" oder geben Sie eine Stadt ein, um zu beginnen.',
+        use_location: '📍 Mein Standort',
+        realtime: 'Echtzeit',
+        live: 'Live',
+        error_not_found: 'Ort nicht gefunden.',
+        search_placeholder: 'Berge suchen...',
+        go_btn: 'Los'
+    }
+};
+
+function t(key) {
+    return translations[currentLang]?.[key] || translations['en'][key] || key;
+}
+
+function applyTranslations() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        el.innerText = t(key);
+    });
+    document.getElementById('cityInput').placeholder = t('search_placeholder');
+    document.querySelector('.search-box button').innerText = t('go_btn');
+}
 
 function toggleUnits() {
     currentUnit = document.getElementById('unitToggle').checked ? 'F' : 'C';
@@ -142,15 +195,15 @@ async function getWeather() {
 
     toggleLoading(true);
     try {
-        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=${currentLang}&format=json`);
         const geoData = await geoRes.json();
-        if (!geoData.results) throw new Error('City not found');
+        if (!geoData.results) throw new Error(t('error_not_found'));
         const { latitude, longitude, name, country } = geoData.results[0];
 
         localStorage.setItem('lastCity', city);
         fetchWeatherByCoords(latitude, longitude, name, country);
     } catch (e) {
-        showError(e.message || 'Location not found');
+        showError(e.message || t('error_not_found'));
         toggleLoading(false);
     }
 }
@@ -253,8 +306,14 @@ function showError(msg = 'Location not found') {
     document.getElementById('placeholderText').style.display = 'block';
 }
 
-// Init: Load last city
+// Init: Load last city and apply translations
 window.onload = () => {
+    // Detect user language
+    const browserLang = navigator.language.split('-')[0];
+    currentLang = translations[browserLang] ? browserLang : 'en';
+
+    applyTranslations();
+
     const lastCity = localStorage.getItem('lastCity');
     if (lastCity) {
         document.getElementById('cityInput').value = lastCity;

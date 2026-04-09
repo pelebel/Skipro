@@ -150,3 +150,15 @@ button:active { transform: scale(0.95); }
 }
 
 #placeholderText { text-align: center; opacity: 0.4; margin-top: 4rem; }
+
+.prime-badge {
+    background: linear-gradient(45deg, #ffcc00, #ffae00);
+    color: #0f172a;
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    margin-left: 5px;
+    vertical-align: middle;
+}

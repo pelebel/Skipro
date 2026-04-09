@@ -7,9 +7,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SkiPro">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2534/2534146.png">
+
     
-   <title>SkiPro: Liquid Edition</title>
+   <title>SkiPro</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -27,11 +27,11 @@
             </div>
         </form>
 
-        <div id="errorMsg" class="error">Location not found.</div>
+        <div id="errorMsg" class="error" data-i18n="error_not_found">Location not found.</div>
 
         <div id="weatherDisplay" style="display: none;">
             <div class="live-header">
-                <p><span class="live-badge">Live</span> Real-time</p>
+                <p><span class="live-badge" data-i18n="live">Live</span> <span data-i18n="realtime">Real-time</span></p>
                 <h1 id="liveTemp">--°C</h1>
                 <p id="locationName">---</p>
             </div >
@@ -40,8 +40,8 @@
         </div >
 
         <div id="placeholderText">
-            <p>Tap "Go" or enter a city to begin.</p>
-            <button onclick="autoLocate()" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--glass-border); margin-top: 10px;">
+            <p data-i18n="welcome">Tap "Go" or enter a city to begin.</p>
+            <button onclick="autoLocate()" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--glass-border); margin-top: 10px;" data-i18n="use_location">
                 📍 Use My Location
             </button>
         </div >
