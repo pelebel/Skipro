@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SkiPro">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2534/2534146.png">
+    
+    <title>SkiPro: Liquid Edition</title>
+
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.07);
+            --glass-heavy: rgba(10, 20, 35, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --accent: #00d2ff;
+            --text: #ffffff;
+            --epic: #00ff88;
+            --good: #a2ff00;
+            --fair: #ffcc00;
+            --bad: #ef4444;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+            color: var(--text);
+            min-height: 100dvh; /* Dynamic Viewport Height for Mobile */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            /* Liquid Mesh Background Animation */
+            background: linear-gradient(45deg, #0f172a, #1e293b, #334155, #1e293b);
+            background-size: 400% 400%;
+            animation: gradientMove 15s ease infinite;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 430px;
+            padding: 20px;
+            z-index: 1;
+        }
+
+        /* iOS-style Search Bar */
+        .search-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        input {
+            flex: 1;
+            padding: 14px;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            outline: none;
+            backdrop-filter: blur(10px);
+        }
+
+        button {
+            padding: 14px 20px;
+            border-radius: 16px;
+            border: none;
+            background: var(--accent);
+            font-weight: 700;
+            color: #0f172a;
+            transition: transform 0.2s;
+        }
+        button:active { transform: scale(0.95); }
+
+        /* Liquid Glass Widgets */
+        .live-header {
+            background: var(--glass-heavy);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 30px;
+            padding: 30px 20px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .live-badge {
+            background: var(--danger);
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            animation: blink 2s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        .live-header h1 { margin: 10px 0; font-size: 3.5rem; font-weight: 200; letter-spacing: -2px; }
+        .live-header p { opacity: 0.6; margin: 0; font-size: 1rem; }
+
+        .forecast-list { display: flex; flex-direction: column; gap: 12px; }
+
+        .forecast-card {
+            display: grid;
+            grid-template-columns: 85px 1fr 95px;
+            align-items: center;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 16px;
+            border-radius: 22px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .day-label { font-weight: 600; font-size: 1rem; display: block; }
+        .day-sub { font-size: 0.75rem; opacity: 0.5; }
+
+        .details-mid { padding-left: 15px; font-size: 0.85rem; line-height: 1.4; }
+
+        .rating-right { text-align: right; }
+        .score-num { display: block; font-weight: 800; font-size: 1.2rem; }
+        .score-txt { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Status Colors */
+        .epic { color: var(--epic); text-shadow: 0 0 15px rgba(0,255,136,0.4); }
+        .good { color: var(--good); text-shadow: 0 0 15px rgba(162,255,0,0.4); }
+        .fair { color: var(--fair); text-shadow: 0 0 15px rgba(255,204,0,0.4); }
+        .bad  { color: var(--bad); text-shadow: 0 0 15px rgba(239,68,68,0.4); }
+
+        .error { color: var(--bad); text-align: center; padding: 20px; display: none; }
+        .loading { opacity: 0.4; pointer-events: none; }
+        #placeholderText { text-align: center; opacity: 0.4; margin-top: 4rem; }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="search-box">
+            <input type="text" id="cityInput" placeholder="Search mountains...">
+            <button onclick="getWeather()">Go</button>
+        </div >
+
+        <div id="errorMsg" class="error">Location not found.</div>
+
+        <div id="weatherDisplay" style="display: none;">
+            <div class="live-header">
+                <p><span class="live-badge">Live</span> Real-time</p>
+                <h1 id="liveTemp">--°C</h1>
+                <p id="locationName">---</p>
+            </div >
+
+            <div class="forecast-list" id="forecastList"></div>
+        </div >
+
+        <div id="placeholderText">
+            <p>Tap "Go" or enter a city to begin.</p>
+            <button onclick="autoLocate()" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--glass-border); margin-top: 10px;">
+                📍 Use My Location
+            </button>
+        </div >
+    </div>
+
+    <script>
+        // Algorithm: Snow-Primary logic (Same high-end logic as before)
+        function calculateProScore(daily, index) {
+            const maxT = daily.temperature_2m_max[index];
+            const minT = daily.temperature_2m_min[index];
+            const snow = daily.snowfall_sum[index] || 0;
+            const wind = daily.wind_speed_10m_max[index] || 0;
+            const humidity = daily.relative_humidity_2m_max[index] || 50;
+            const avgT = (maxT + minT) / 2;
+
+            let score = 0;
+            score += Math.min((snow / 30) * 40, 40); // Snow volume
+
+            let qualityScore = 0;
+            if (snow > 0) {
+                if (avgT >= -18 && avgT <= -10) qualityScore += 25; 
+                else if (avgT > -10 && avgT <= -2) qualityScore += 15; 
+                if (humidity < 45) qualityScore += 20;
+                else if (humidity < 70) qualityScore += 10;
+            }
+            score += qualityScore;
+
+            let expScore = 15;
+            if (wind > 30) expScore = 0;
+            else if (wind > 15) expScore = 7;
+            score += expScore;
+
+            if (snow === 0) score = Math.min(score, 40);
+            return Math.min(Math.round(score), 100);
+        }
+
+        // AUTO-LOCATION FUNCTION
+        function autoLocate() {
+            if (navigator.geolocation) {
+                document.getElementById('placeholderText').innerText = "Locating...";
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    fetchWeatherByCoords(latitude, longitude);
+                }, (err) => {
+                    alert("Please enable location services to use this feature.");
+                });
+            } else {
+                alert("Geolocation not supported by your device.");
+            }
+        }
+
+        async function getWeather() {
+            const city = document.getElementById('cityInput').value;
+            if (!city) return;
+            try {
+                const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
+                const geoData = await geoRes.json();
+                if (!geoData.results) throw new Error();
+                const { latitude, longitude, name, country } = geoData.results[0];
+                fetchWeatherByCoords(latitude, longitude, name, country);
+            } catch (e) {
+                showError();
+            }
+        }
+
+        // MAIN DATA ENGINE
+        async function fetchWeatherByCoords(lat, lon, name = "Your Location", country = "") {
+            const dashboard = document.getElementById('dashboard');
+            const weatherDisplay = document.getElementById('weatherDisplay');
+            const forecastList = document.getElementById('forecastList');
+            const placeholder = document.getElementById('placeholderText');
+            
+            document.body.classList.add('loading');
+            forecastList.innerHTML = '';
+
+            try {
+                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,snowfall_sum,wind_speed_10m_max,relative_humidity_2m_max&timezone=auto`);
+                const data = await weatherRes.json();
+
+                document.getElementById('locationName').innerText = `${name}, ${country}`;
+                document.getElementById('liveTemp').innerText = `${Math.round(data.current.temperature_2m)}°C`;
+
+                for (let i = 0; i < 5; i++) {
+                    const score = calculateProScore(data.daily, i);
+                    renderCard(data.daily, i, score);
+                }
+
+                weatherDisplay.style.display = 'block';
+                placeholder.style.display = 'none';
+            } catch (e) {
+                showError();
+            } finally {
+                document.body.classList.remove('loading');
+            }
+        }
+
+        function renderCard(daily, i, score) {
+            const list = document.getElementById('forecastList');
+            const dateObj = new Date(daily.time[i]);
+            let label = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+            let sub = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            
+            if (i === 0) { label = "Today"; sub = "Live + Forecast"; }
+            else if (i === 1) { label = "Tomorrow"; }
+
+            let tempDisp = (i === 0) 
+                ? `${Math.round(daily.temperature_2m_max[i])}° / ${Math.round(daily.temperature_2m_min[i])}°C` 
+                : `${Math.round(daily.temperature_2m_max[i])}° / ${Math.round(daily.temperature_2m_min[i])}°C`;
+
+            let status = "Fair", color = "fair";
+            if (score >= 85) { status = "Epic"; color = "epic"; }
+            else if (score >= 65) { status = "Good"; color = "good"; }
+            else if (score < 45) { status = "Poor"; color = "bad"; }
+
+            const card = document.createElement('div');
+            card.className = 'forecast-card';
+            card.innerHTML = `
+                <div><span class="day-label">${label}</span><span class="day-sub">${sub}</span></div>
+                <div class="details-mid">${tempDisp}<br>${daily.snowfall_sum[i] > 0 ? '❄️ '+daily.snowfall_sum[i].toFixed(1)+'cm' : 'No Snow'}</div>
+                <div class="rating-right"><span class="score-num ${color}">${score}</span><span class="score-txt ${color}">${status}</span></div>
+            `;
+            list.appendChild(card);
+        }
+
+        function showError() {
+            document.getElementById('errorMsg').style.display = 'block';
+            document.getElementById('weatherDisplay').style.display = 'none';
+            document.getElementById('placeholderText').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
