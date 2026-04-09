@@ -51,12 +51,12 @@ function convertTemp(temp) {
 }
 
 // Algorithm: Snow-Primary logic
-function calculateProScore(daily, index) {
+function calculateProScore(daily, index, hourlyData = null) {
     const maxT = daily.temperature_2m_max[index];
     const minT = daily.temperature_2m_min[index];
     const snow = daily.snowfall_sum[index] || 0;
     const wind = daily.wind_speed_10m_max[index] || 0;
-    const humidity = daily.relative_humidity_2m_max[index] || 50;
+    const humidity = daily.relative_humidity_max ? daily.relative_humidity_max[index] : 50;
     const weatherCode = daily.weather_code ? daily.weather_code[index] : null;
     const avgT = (maxT + minT) / 2;
 
@@ -89,9 +89,31 @@ function calculateProScore(daily, index) {
         if (maxT >= 2 && maxT <= 10) springScore += 10; // Ideal spring temp
         if (wind < 15) springScore += 10; // Calm wind
     }
+
+    // Prime Window Bonus
+    let isPrime = false;
+    if (hourlyData) {
+        let consecutiveHours = 0;
+        for (let i = 0; i < hourlyData.temps.length; i++) {
+            const temp = hourlyData.temps[i];
+            const code = hourlyData.codes[i];
+            if (temp >= 2 && temp <= 10 && (code === 0 || code === 1)) {
+                consecutiveHours++;
+                if (consecutiveHours >= 3) {
+                    isPrime = true;
+                    // If it's a prime window, it's at least a "Good" day
+                    if (springScore < 60) springScore = 60;
+                    springScore += 20;
+                }
+            } else {
+                consecutiveHours = 0;
+            }
+        }
+    }
+
     springScore = Math.min(Math.round(springScore), 100);
 
-    return Math.max(winterScore, springScore);
+    return { score: Math.max(winterScore, springScore), isPrime };
 }
 
 function autoLocate() {
@@ -145,7 +167,7 @@ async function fetchWeatherByCoords(lat, lon, name = "Your Location", country = 
     forecastList.innerHTML = '';
 
     try {
-        const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,snowfall_sum,wind_speed_10m_max,relative_humidity_2m_max,weather_code&timezone=auto`);
+        const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,snowfall_sum,wind_speed_10m_max,relative_humidity_2m_max,weather_code&timezone=auto`);
         const data = await weatherRes.json();
 
         // Cache the data for unit toggling
@@ -157,8 +179,15 @@ async function fetchWeatherByCoords(lat, lon, name = "Your Location", country = 
 
         // Extended to 7 days
         for (let i = 0; i < 7; i++) {
-            const score = calculateProScore(data.daily, i);
-            renderCard(data.daily, i, score, data.daily.weather_code ? data.daily.weather_code[i] : null);
+            // Slice hourly data for this specific day (24 hours)
+            const hourlyData = {
+                temps: data.hourly.temperature_2m.slice(i * 24, (i + 1) * 24),
+                codes: data.hourly.weather_code.slice(i * 24, (i + 1) * 24),
+                wind: data.hourly.wind_speed_10m.slice(i * 24, (i + 1) * 24)
+            };
+
+            const result = calculateProScore(data.daily, i, hourlyData);
+            renderCard(data.daily, i, result.score, result.isPrime, data.daily.weather_code ? data.daily.weather_code[i] : null);
         }
 
         weatherDisplay.style.display = 'block';
@@ -170,12 +199,12 @@ async function fetchWeatherByCoords(lat, lon, name = "Your Location", country = 
     }
 }
 
-function renderCard(daily, i, score, weatherCode) {
+function renderCard(daily, i, score, isPrime, weatherCode) {
     const list = document.getElementById('forecastList');
     const dateObj = new Date(daily.time[i]);
     let label = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
     let sub = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    
+
     if (i === 0) { label = "Today"; sub = "Live + Forecast"; }
     else if (i === 1) { label = "Tomorrow"; }
 
@@ -183,7 +212,7 @@ function renderCard(daily, i, score, weatherCode) {
     const tempMin = convertTemp(daily.temperature_2m_min[i]);
     const wind = Math.round(daily.wind_speed_10m_max[i]);
     const snow = daily.snowfall_sum[i] || 0;
-    
+
     let status = "Fair", color = "fair";
     if (score >= 85) { status = "Epic"; color = "epic"; }
     else if (score >= 65) { status = "Good"; color = "good"; }
@@ -193,7 +222,7 @@ function renderCard(daily, i, score, weatherCode) {
     card.className = 'forecast-card';
     card.innerHTML = `
         <div>
-            <span class="day-label">${label} ${getIcon(weatherCode)}</span>
+            <span class="day-label">${label} ${getIcon(weatherCode)}${isPrime ? '<span class="prime-badge">Prime</span>' : ''}</span>
             <span class="day-sub">${sub}</span>
         </div>
         <div class="details-mid">
