@@ -37,7 +37,15 @@ const translations = {
         live: 'Live',
         error_not_found: 'Location not found.',
         search_placeholder: 'Search mountains...',
-        go_btn: 'Go'
+        go_btn: 'Go',
+        today: 'Today',
+        tomorrow: 'Tomorrow',
+        live_forecast: 'Live + Forecast',
+        no_snow: 'No Snow',
+        score_epic: 'Epic',
+        score_good: 'Good',
+        score_fair: 'Fair',
+        score_poor: 'Poor'
     },
     es: {
         welcome: 'Toca "Ir" o introduce una ciudad para empezar.',
@@ -46,7 +54,15 @@ const translations = {
         live: 'En vivo',
         error_not_found: 'Ubicación no encontrada.',
         search_placeholder: 'Buscar montañas...',
-        go_btn: 'Ir'
+        go_btn: 'Ir',
+        today: 'Hoy',
+        tomorrow: 'Mañana',
+        live_forecast: 'En vivo + Pronóstico',
+        no_snow: 'Sin nieve',
+        score_epic: 'Épico',
+        score_good: 'Bueno',
+        score_fair: 'Regular',
+        score_poor: 'Pobre'
     },
     fr: {
         welcome: 'Appuyez sur "Rechercher" ou saisissez une ville pour commencer.',
@@ -55,7 +71,15 @@ const translations = {
         live: 'En direct',
         error_not_found: 'Lieu non trouvé.',
         search_placeholder: 'Rechercher...',
-        go_btn: 'Rechercher'
+        go_btn: 'Rechercher',
+        today: 'Aujourd\'hui',
+        tomorrow: 'Demain',
+        live_forecast: 'Direct + Prévisions',
+        no_snow: 'Pas de neige',
+        score_epic: 'Épique',
+        score_good: 'Bon',
+        score_fair: 'Passable',
+        score_poor: 'Médiocre'
     },
     de: {
         welcome: 'Tippen Sie auf "Los" oder geben Sie eine Stadt ein, um zu beginnen.',
@@ -64,7 +88,15 @@ const translations = {
         live: 'Live',
         error_not_found: 'Ort nicht gefunden.',
         search_placeholder: 'Berge suchen...',
-        go_btn: 'Los'
+        go_btn: 'Los',
+        today: 'Heute',
+        tomorrow: 'Morgen',
+        live_forecast: 'Live + Vorhersage',
+        no_snow: 'Kein Schnee',
+        score_epic: 'Episch',
+        score_good: 'Gut',
+        score_fair: 'Mittel',
+        score_poor: 'Schlecht'
     }
 };
 
@@ -255,21 +287,21 @@ async function fetchWeatherByCoords(lat, lon, name = "Your Location", country = 
 function renderCard(daily, i, score, isPrime, weatherCode) {
     const list = document.getElementById('forecastList');
     const dateObj = new Date(daily.time[i]);
-    let label = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-    let sub = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    let label = dateObj.toLocaleDateString(currentLang, { weekday: 'short' });
+    let sub = dateObj.toLocaleDateString(currentLang, { month: 'short', day: 'numeric' });
 
-    if (i === 0) { label = "Today"; sub = "Live + Forecast"; }
-    else if (i === 1) { label = "Tomorrow"; }
+    if (i === 0) { label = t('today'); sub = t('live_forecast'); }
+    else if (i === 1) { label = t('tomorrow'); }
 
     const tempMax = convertTemp(daily.temperature_2m_max[i]);
     const tempMin = convertTemp(daily.temperature_2m_min[i]);
     const wind = Math.round(daily.wind_speed_10m_max[i]);
     const snow = daily.snowfall_sum[i] || 0;
 
-    let status = "Fair", color = "fair";
-    if (score >= 85) { status = "Epic"; color = "epic"; }
-    else if (score >= 65) { status = "Good"; color = "good"; }
-    else if (score < 45) { status = "Poor"; color = "bad"; }
+    let status = t('score_fair'), color = "fair";
+    if (score >= 85) { status = t('score_epic'); color = "epic"; }
+    else if (score >= 65) { status = t('score_good'); color = "good"; }
+    else if (score < 45) { status = t('score_poor'); color = "bad"; }
 
     const card = document.createElement('div');
     card.className = 'forecast-card';
@@ -280,7 +312,7 @@ function renderCard(daily, i, score, isPrime, weatherCode) {
         </div>
         <div class="details-mid">
             ${tempMax}° / ${tempMin}°${currentUnit}
-            <br>💨 ${wind}km/h ${snow > 0 ? '❄️ '+snow.toFixed(1)+'cm' : 'No Snow'}
+            <br>💨 ${wind}km/h ${snow > 0 ? '❄️ '+snow.toFixed(1)+'cm' : t('no_snow')}
         </div>
         <div class="rating-right">
             <span class="score-num ${color}">${score}</span>
