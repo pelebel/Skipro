@@ -1,0 +1,152 @@
+:root {
+    --glass: rgba(255, 255, 255, 0.07);
+    --glass-heavy: rgba(10, 20, 35, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --accent: #00d2ff;
+    --text: #ffffff;
+    --epic: #00ff88;
+    --good: #a2ff00;
+    --fair: #ffcc00;
+    --bad: #ef4444;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+    margin: 0;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+    color: var(--text);
+    min-height: 100dvh; /* Dynamic Viewport Height for Mobile */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+    /* Liquid Mesh Background Animation */
+    background: linear-gradient(45deg, #0f172a, #1e293b, #334155, #1e293b);
+    background-size: 400% 400%;
+    animation: gradientMove 15s ease infinite;
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.app-container {
+    width: 100%;
+    max-width: 430px;
+    padding: 20px;
+    z-index: 1;
+}
+
+/* iOS-style Search Bar */
+.search-box {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+}
+
+input {
+    flex: 1;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 16px;
+    outline: none;
+    backdrop-filter: blur(10px);
+}
+
+button {
+    padding: 14px 20px;
+    border-radius: 16px;
+    border: none;
+    background: var(--accent);
+    font-weight: 700;
+    color: #0f172a;
+    transition: transform 0.2s;
+}
+button:active { transform: scale(0.95); }
+
+/* Liquid Glass Widgets */
+.live-header {
+    background: var(--glass-heavy);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-radius: 30px;
+    padding: 30px 20px;
+    text-align: center;
+    border: 1px solid var(--glass-border);
+    margin-bottom: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.live-badge {
+    background: var(--danger);
+    font-size: 0.6rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    animation: blink 2s infinite;
+}
+@keyframes blink { 50% { opacity: 0.5; } }
+
+.live-header h1 { margin: 10px 0; font-size: 3.5rem; font-weight: 200; letter-spacing: -2px; }
+.live-header p { opacity: 0.6; margin: 0; font-size: 1rem; }
+
+.forecast-list { display: flex; flex-direction: column; gap: 12px; }
+
+.forecast-card {
+    display: grid;
+    grid-template-columns: 85px 1fr 95px;
+    align-items: center;
+    background: var(--glass);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    padding: 16px;
+    border-radius: 22px;
+    border: 1px solid var(--glass-border);
+}
+
+.day-label { font-weight: 600; font-size: 1rem; display: block; }
+.day-sub { font-size: 0.75rem; opacity: 0.5; }
+
+.details-mid { padding-left: 15px; font-size: 0.85rem; line-height: 1.4; }
+
+.rating-right { text-align: right; }
+.score-num { display: block; font-weight: 800; font-size: 1.2rem; }
+.score-txt { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Status Colors */
+.epic { color: var(--epic); text-shadow: 0 0 15px rgba(0,255,136,0.4); }
+.good { color: var(--good); text-shadow: 0 0 15px rgba(162,255,0,0.4); }
+.fair { color: var(--fair); text-shadow: 0 0 15px rgba(255,204,0,0.4); }
+.bad  { color: var(--bad); text-shadow: 0 0 15px rgba(239,68,68,0.4); }
+
+.error { color: var(--bad); text-align: center; padding: 20px; display: none; }
+.loading { 
+    opacity: 0.4; 
+    pointer-events: none; 
+}
+
+.spinner {
+    display: none;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255,255,255,0.1);
+    border-top: 4px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#placeholderText { text-align: center; opacity: 0.4; margin-top: 4rem; }
