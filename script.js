@@ -24,10 +24,14 @@ function getIcon(code) {
     return WEATHER_ICONS[code] || '🌡️';
 }
 
-let currentUnit = 'C';
-let cachedWeatherData = null;
-let cachedLocation = null;
-let currentLang = 'en';
+const state = {
+    unit: 'C',
+    weather: null,
+    location: null,
+    lang: 'en',
+    cachedWeatherData: null,
+    cachedLocation: null
+};
 
 const translations = {
     en: {
@@ -101,7 +105,7 @@ const translations = {
 };
 
 function t(key) {
-    return translations[currentLang]?.[key] || translations['en'][key] || key;
+    return translations[state.lang]?.[key] || translations['en'][key] || key;
 }
 
 function applyTranslations() {
@@ -114,11 +118,11 @@ function applyTranslations() {
 }
 
 function toggleUnits() {
-    currentUnit = document.getElementById('unitToggle').checked ? 'F' : 'C';
-    document.getElementById('unitLabel').innerText = currentUnit === 'F' ? '°F' : '°C';
+    state.unit = document.getElementById('unitToggle').checked ? 'F' : 'C';
+    document.getElementById('unitLabel').innerText = state.unit === 'F' ? '°F' : '°C';
 
     // If we have cached data, refresh the display without a new API call
-    if (cachedWeatherData && cachedLocation) {
+    if (state.weather && state.location) {
         updateWeatherDisplay();
     } else {
         const locationName = document.getElementById('locationName').innerText;
@@ -129,13 +133,14 @@ function toggleUnits() {
 }
 
 function convertTemp(temp) {
-    if (currentUnit === 'F') {
+    if (state.unit === 'F') {
         return Math.round((temp * 9/5) + 32);
     }
     return Math.round(temp);
 }
 
 // Algorithm: Snow-Primary logic
+// Algorithm: Pro Score 2.0 - Professional Ski Condition Index
 function calculateProScore(daily, index, hourlyData = null) {
     const maxT = daily.temperature_2m_max[index];
     const minT = daily.temperature_2m_min[index];
@@ -145,37 +150,54 @@ function calculateProScore(daily, index, hourlyData = null) {
     const weatherCode = daily.weather_code ? daily.weather_code[index] : null;
     const avgT = (maxT + minT) / 2;
 
-    // Winter Score Logic
+    // 1. Wind Chill Calculation (Professional Formula)
+    const windChill = 13.12 + (0.6215 * avgT) - (11.37 * Math.pow(wind, 0.16)) + (0.3965 * avgT * Math.pow(wind, 0.16));
+
+    // 2. Snow Quality Multiplier (Density Proxy)
+    let qualityMultiplier = 1.0;
+    if (humidity < 50) qualityMultiplier = 1.2;      // Dry Powder
+    else if (humidity > 70) qualityMultiplier = 0.7;      // Heavy/Wet Snow
+
+    // 3. Base Winter Score
     let winterScore = 0;
-    winterScore += Math.min((snow / 30) * 40, 40); // Snow volume
+    winterScore += Math.min((snow * qualityMultiplier / 30) * 40, 40); // Weighted snow volume
 
-    let qualityScore = 0;
-    if (snow > 0) {
-        if (avgT >= -18 && avgT <= -10) qualityScore += 25;
-        else if (avgT > -10 && avgT <= -2) qualityScore += 15;
-        if (humidity < 45) qualityScore += 20;
-        else if (humidity < 70) qualityScore += 10;
+    // Temperature Quality Points
+    let tempPoints = 0;
+    if (avgT >= -6 && avgT <= -1) tempPoints = 25; // Sweet spot
+    else if (avgT < -10) tempPoints = 20;           // Deep freeze (good for powder)
+    else if (avgT > -1 && avgT <= 2) tempPoints = 10; // Near melting
+    winterScore += tempPoints;
+
+    // 4. Bluebird Bonus (Clear Sky + Fresh Snow)
+    if (weatherCode === 0 && snow > 0) {
+        winterScore += 15;
     }
-    winterScore += qualityScore;
 
-    let expScore = 15;
-    if (wind > 30) expScore = 0;
-    else if (wind > 15) expScore = 7;
-    winterScore += expScore;
+    // 5. Melt-Freeze Cycle Penalty
+    if (maxT > 0 && minT < 0) {
+        winterScore -= 20; // Hard crust/ice formation
+    }
 
-    if (snow === 0) winterScore = Math.min(winterScore, 40);
-    winterScore = Math.min(Math.round(winterScore), 100);
+    // 6. Rain-on-Snow Penalty
+    const rainCodes = [61, 63, 65, 80, 81, 82];
+    if (rainCodes.includes(weatherCode) && avgT < 3) {
+        winterScore -= 30; // Glaze/Ice
+    }
 
-    // Spring Score Logic
+    // Wind Penalty (Extreme Cold/Wind)
+    if (windChill < -25) winterScore -= 15;
+
+    // Spring Score Logic (Retained and refined)
     let springScore = 0;
     if (maxT > 0 && (weatherCode === 0 || weatherCode === 1)) {
-        springScore = 60; // Base for sunny spring day
-        if (weatherCode === 0) springScore += 15; // Bonus for perfectly clear
-        if (maxT >= 2 && maxT <= 10) springScore += 10; // Ideal spring temp
-        if (wind < 15) springScore += 10; // Calm wind
+        springScore = 60;
+        if (weatherCode === 0) springScore += 15;
+        if (maxT >= 2 && maxT <= 10) springScore += 10;
+        if (wind < 15) springScore += 10;
     }
 
-    // Prime Window Bonus
+    // Prime Window Bonus (Retained)
     let isPrime = false;
     if (hourlyData) {
         let consecutiveHours = 0;
@@ -186,7 +208,6 @@ function calculateProScore(daily, index, hourlyData = null) {
                 consecutiveHours++;
                 if (consecutiveHours >= 3) {
                     isPrime = true;
-                    // If it's a prime window, it's at least a "Good" day
                     if (springScore < 60) springScore = 60;
                     springScore += 20;
                 }
@@ -196,9 +217,14 @@ function calculateProScore(daily, index, hourlyData = null) {
         }
     }
 
-    springScore = Math.min(Math.round(springScore), 100);
+    const finalScore = Math.max(Math.round(winterScore), Math.round(springScore));
 
-    return { score: Math.max(winterScore, springScore), isPrime };
+    return {
+        score: Math.min(finalScore, 100),
+        isPrime,
+        windChill: Math.round(windChill),
+        quality: qualityMultiplier > 1 ? 'Powder' : (qualityMultiplier < 1 ? 'Heavy' : 'Standard')
+    };
 }
 
 function autoLocate() {
@@ -217,7 +243,7 @@ function autoLocate() {
 }
 
 function updateWeatherDisplay() {
-    const { latitude, longitude, name, country } = cachedLocation;
+    const { latitude, longitude, name, country } = state.cachedLocation;
     fetchWeatherByCoords(latitude, longitude, name, country, true);
 }
 
@@ -227,7 +253,7 @@ async function getWeather() {
 
     toggleLoading(true);
     try {
-        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=${currentLang}&format=json`);
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=${state.lang}&format=json`);
         const geoData = await geoRes.json();
         if (!geoData.results) throw new Error(t('error_not_found'));
         const { latitude, longitude, name, country } = geoData.results[0];
@@ -256,14 +282,20 @@ async function fetchWeatherByCoords(lat, lon, name = "Your Location", country = 
         const data = await weatherRes.json();
 
         // Cache the data for unit toggling
-        cachedWeatherData = data;
-        cachedLocation = { latitude: lat, longitude: lon, name: name, country: country };
+        state.cachedWeatherData = data;
+        state.cachedLocation = { latitude: lat, longitude: lon, name: name, country: country };
 
         document.getElementById('locationName').innerText = `${name}, ${country}`;
-        document.getElementById('liveTemp').innerText = `${convertTemp(data.current.temperature_2m)}°${currentUnit}`;
+        document.getElementById('liveTemp').innerText = `${convertTemp(data.current.temperature_2m)}°${state.unit}`;
 
-        // Extended to 7 days
+        // Extended to 7 days, starting from today
         for (let i = 0; i < 7; i++) {
+            const dateObj = new Date(data.daily.time[i]);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (dateObj < today) continue;
+
             // Slice hourly data for this specific day (24 hours)
             const hourlyData = {
                 temps: data.hourly.temperature_2m.slice(i * 24, (i + 1) * 24),
@@ -272,7 +304,7 @@ async function fetchWeatherByCoords(lat, lon, name = "Your Location", country = 
             };
 
             const result = calculateProScore(data.daily, i, hourlyData);
-            renderCard(data.daily, i, result.score, result.isPrime, data.daily.weather_code ? data.daily.weather_code[i] : null);
+            renderCard(data.daily, i, result, data.daily.weather_code ? data.daily.weather_code[i] : null);
         }
 
         weatherDisplay.style.display = 'block';
@@ -284,14 +316,22 @@ async function fetchWeatherByCoords(lat, lon, name = "Your Location", country = 
     }
 }
 
-function renderCard(daily, i, score, isPrime, weatherCode) {
+function renderCard(daily, i, result, weatherCode) {
     const list = document.getElementById('forecastList');
     const dateObj = new Date(daily.time[i]);
-    let label = dateObj.toLocaleDateString(currentLang, { weekday: 'short' });
-    let sub = dateObj.toLocaleDateString(currentLang, { month: 'short', day: 'numeric' });
 
-    if (i === 0) { label = t('today'); sub = t('live_forecast'); }
-    else if (i === 1) { label = t('tomorrow'); }
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+
+    const isToday = dateObj.toDateString() === today.toDateString();
+    const isTomorrow = dateObj.toDateString() === tomorrow.toDateString();
+
+    let label = dateObj.toLocaleDateString(state.lang, { weekday: 'short' });
+    let sub = dateObj.toLocaleDateString(state.lang, { month: 'short', day: 'numeric' });
+
+    if (isToday) { label = t('today'); sub = t('live_forecast'); }
+    else if (isTomorrow) { label = t('tomorrow'); }
 
     const tempMax = convertTemp(daily.temperature_2m_max[i]);
     const tempMin = convertTemp(daily.temperature_2m_min[i]);
@@ -299,23 +339,23 @@ function renderCard(daily, i, score, isPrime, weatherCode) {
     const snow = daily.snowfall_sum[i] || 0;
 
     let status = t('score_fair'), color = "fair";
-    if (score >= 85) { status = t('score_epic'); color = "epic"; }
-    else if (score >= 65) { status = t('score_good'); color = "good"; }
-    else if (score < 45) { status = t('score_poor'); color = "bad"; }
+    if (result.score >= 85) { status = t('score_epic'); color = "epic"; }
+    else if (result.score >= 65) { status = t('score_good'); color = "good"; }
+    else if (result.score < 45) { status = t('score_poor'); color = "bad"; }
 
     const card = document.createElement('div');
     card.className = 'forecast-card';
     card.innerHTML = `
         <div>
-            <span class="day-label">${label} ${getIcon(weatherCode)}${isPrime ? '<span class="prime-badge">Prime</span>' : ''}</span>
+            <span class="day-label">${label} ${getIcon(weatherCode)}${result.isPrime ? '<span class="prime-badge">Prime</span>' : ''}</span>
             <span class="day-sub">${sub}</span>
         </div>
         <div class="details-mid">
-            ${tempMax}° / ${tempMin}°${currentUnit}
+            ${tempMax}° / ${tempMin}°${state.unit}
             <br>💨 ${wind}km/h ${snow > 0 ? '❄️ '+snow.toFixed(1)+'cm' : t('no_snow')}
         </div>
         <div class="rating-right">
-            <span class="score-num ${color}">${score}</span>
+            <span class="score-num ${color}">${result.score}</span>
             <span class="score-txt ${color}">${status}</span>
         </div>
     `;
@@ -342,7 +382,7 @@ function showError(msg = 'Location not found') {
 window.onload = () => {
     // Detect user language
     const browserLang = navigator.language.split('-')[0];
-    currentLang = translations[browserLang] ? browserLang : 'en';
+    state.lang = translations[browserLang] ? browserLang : 'en';
 
     applyTranslations();
 
