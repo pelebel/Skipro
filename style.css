@@ -45,8 +45,18 @@ body {
 /* iOS-style Search Bar */
 .search-box {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 12px;
     margin-bottom: 1.5rem;
+}
+
+.search-group {
+    display: flex;
+    gap: 8px;
+}
+
+.search-group input {
+    flex: 1;
 }
 
 input {

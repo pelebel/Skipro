@@ -25,7 +25,6 @@ function getIcon(code) {
 }
 
 const state = {
-    unit: 'C',
     weather: null,
     location: null,
     lang: 'en',
@@ -125,24 +124,11 @@ function applyTranslations() {
 }
 
 function toggleUnits() {
-    state.unit = document.getElementById('unitToggle').checked ? 'F' : 'C';
-    document.getElementById('unitLabel').innerText = state.unit === 'F' ? '°F' : '°C';
-
-    // If we have cached data, refresh the display without a new API call
-    if (state.weather && state.location) {
-        updateWeatherDisplay();
-    } else {
-        const locationName = document.getElementById('locationName').innerText;
-        if (locationName !== '---') {
-            getWeather();
-        }
-    }
+    // This function is now deprecated as we only use Celsius
+    console.log('Unit toggling is disabled. Metric system is now permanent.');
 }
 
 function convertTemp(temp) {
-    if (state.unit === 'F') {
-        return Math.round((temp * 9/5) + 32);
-    }
     return Math.round(temp);
 }
 
@@ -299,7 +285,8 @@ async function fetchWeatherByCoords(lat, lon, name = "Your Location", country = 
         state.cachedLocation = { latitude: lat, longitude: lon, name: name, country: country };
 
         document.getElementById('locationName').innerText = `${name}, ${country}`;
-        document.getElementById('liveTemp').innerText = `${convertTemp(data.current.temperature_2m)}°${state.unit}`;
+        const liveIcon = getIcon(data.current.weather_code);
+        document.getElementById('liveTemp').innerText = `${liveIcon} ${convertTemp(data.current.temperature_2m)}°C`;
 
         // Calculate and display Live Pro Score
         const currentMockDaily = {
@@ -381,7 +368,7 @@ function renderCard(daily, i, result, weatherCode) {
             <span class="day-sub">${sub}</span>
         </div>
         <div class="details-mid">
-            ${tempMax}° / ${tempMin}°${state.unit}
+            ${tempMax}° / ${tempMin}°C
             <br>💨 ${wind}km/h ${snow > 0 ? '❄️ '+snow.toFixed(1)+'cm' : t('no_snow')}
         </div>
         <div class="rating-right">

@@ -16,14 +16,10 @@
 
     <div class="app-container">
         <div id="loadingSpinner" class="spinner"></div>
-      <form class="search-box" onsubmit="event.preventDefault(); getWeather()">
-            <div style="display: flex; gap: 8px; flex: 1;">
+        <form class="search-box" onsubmit="event.preventDefault(); getWeather()">
+            <div class="search-group">
                 <input type="text" id="cityInput" placeholder="Search mountains..." aria-label="Search for a mountain or city">
                 <button type="submit">Go</button>
-            </div>
-            <div class="unit-toggle" style="display: flex; align-items: center; background: var(--glass); padding: 10px; border-radius: 16px; border: 1px solid var(--glass-border); min-width: 80px; justify-content: center;">
-                <span id="unitLabel" style="font-size: 0.8rem; margin-right: 5px;">°C</span>
-                <input type="checkbox" id="unitToggle" onchange="toggleUnits()" style="width: 16px; height: 16px; cursor: pointer;">
             </div>
         </form>
 
