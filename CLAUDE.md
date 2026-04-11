@@ -11,7 +11,8 @@ SkiPro provides real-time weather data and a "Pro Score" (0-100) to determine th
 - **Deployment**: Static site
 
 ## Key Technical Details
-- **Pro Score Algorithm**: Located in `script.js` (`calculateProScore`). It weights snowfall volume, temperature ranges (optimal: -18°C to -10°C), humidity, and wind speed.
+- **Pro Score Algorithm**: Located in `script.js` (`calculateProScore`). It implements a professional Ski Condition Index using wind chill, snow quality (humidity-based density proxy), and specific bonuses/penalties (e.g., Bluebird bonus, Melt-Freeze penalty).
+- **State Management**: Uses a centralized `state` object to track units, language, and cached weather/location data.
 - **UI Style**: iOS-inspired "Liquid" design with dynamic gradients and backdrop filters.
 - **Units**: Supports both Celsius and Fahrenheit.
 

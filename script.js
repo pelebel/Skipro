@@ -108,6 +108,13 @@ function t(key) {
     return translations[state.lang]?.[key] || translations['en'][key] || key;
 }
 
+function getScoreMetadata(score) {
+    if (score >= 85) return { color: "epic", text: t('score_epic') };
+    if (score >= 65) return { color: "good", text: t('score_good') };
+    if (score < 45) return { color: "bad", text: t('score_poor') };
+    return { color: "fair", text: t('score_fair') };
+}
+
 function applyTranslations() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
@@ -145,6 +152,7 @@ function calculateProScore(daily, index, hourlyData = null) {
     const maxT = daily.temperature_2m_max[index];
     const minT = daily.temperature_2m_min[index];
     const snow = daily.snowfall_sum[index] || 0;
+    const prevSnow = index > 0 ? (daily.snowfall_sum[index - 1] || 0) : 0;
     const wind = daily.wind_speed_10m_max[index] || 0;
     const humidity = daily.relative_humidity_max ? daily.relative_humidity_max[index] : 50;
     const weatherCode = daily.weather_code ? daily.weather_code[index] : null;
@@ -160,6 +168,11 @@ function calculateProScore(daily, index, hourlyData = null) {
 
     // 3. Base Winter Score
     let winterScore = 0;
+
+    // Snow Memory: Base score from yesterday's snow
+    if (prevSnow > 10) winterScore += 20;
+    else if (prevSnow > 0) winterScore += 10;
+
     winterScore += Math.min((snow * qualityMultiplier / 30) * 40, 40); // Weighted snow volume
 
     // Temperature Quality Points
@@ -169,9 +182,9 @@ function calculateProScore(daily, index, hourlyData = null) {
     else if (avgT > -1 && avgT <= 2) tempPoints = 10; // Near melting
     winterScore += tempPoints;
 
-    // 4. Bluebird Bonus (Clear Sky + Fresh Snow)
-    if (weatherCode === 0 && snow > 0) {
-        winterScore += 15;
+    // 4. Bluebird Bonus (Clear Sky + Recent Snow)
+    if (weatherCode === 0 && (snow > 0 || prevSnow > 10)) {
+        winterScore += 20;
     }
 
     // 5. Melt-Freeze Cycle Penalty
@@ -191,7 +204,7 @@ function calculateProScore(daily, index, hourlyData = null) {
     // Spring Score Logic (Retained and refined)
     let springScore = 0;
     if (maxT > 0 && (weatherCode === 0 || weatherCode === 1)) {
-        springScore = 60;
+        springScore = 40; // Lowered base to start as 'Fair'
         if (weatherCode === 0) springScore += 15;
         if (maxT >= 2 && maxT <= 10) springScore += 10;
         if (wind < 15) springScore += 10;
@@ -208,8 +221,7 @@ function calculateProScore(daily, index, hourlyData = null) {
                 consecutiveHours++;
                 if (consecutiveHours >= 3) {
                     isPrime = true;
-                    if (springScore < 60) springScore = 60;
-                    springScore += 20;
+                    springScore += 20; // Additive bonus, no more floor
                 }
             } else {
                 consecutiveHours = 0;
@@ -270,6 +282,7 @@ async function fetchWeatherByCoords(lat, lon, name = "Your Location", country = 
     const weatherDisplay = document.getElementById('weatherDisplay');
     const forecastList = document.getElementById('forecastList');
     const placeholder = document.getElementById('placeholderText');
+    const liveScoreContainer = document.getElementById('liveScoreContainer');
 
     if (!isUpdatingUnits) {
         toggleLoading(true);
@@ -287,6 +300,26 @@ async function fetchWeatherByCoords(lat, lon, name = "Your Location", country = 
 
         document.getElementById('locationName').innerText = `${name}, ${country}`;
         document.getElementById('liveTemp').innerText = `${convertTemp(data.current.temperature_2m)}°${state.unit}`;
+
+        // Calculate and display Live Pro Score
+        const currentMockDaily = {
+            temperature_2m_max: [data.current.temperature_2m],
+            temperature_2m_min: [data.current.temperature_2m],
+            snowfall_sum: [0],
+            wind_speed_10m_max: [data.current.wind_speed_10m],
+            relative_humidity_max: [50], // Default since current humidity isn't in the request
+            weather_code: [data.current.weather_code]
+        };
+        const liveResult = calculateProScore(currentMockDaily, 0);
+
+        if (liveScoreContainer) {
+            liveScoreContainer.style.display = 'flex';
+            document.getElementById('liveScoreNum').innerText = liveResult.score;
+
+            const { color, text } = getScoreMetadata(liveResult.score);
+            liveScoreContainer.className = `score-num ${color}`;
+            document.getElementById('liveScoreText').innerText = text;
+        }
 
         // Extended to 7 days, starting from today
         for (let i = 0; i < 7; i++) {
@@ -338,10 +371,7 @@ function renderCard(daily, i, result, weatherCode) {
     const wind = Math.round(daily.wind_speed_10m_max[i]);
     const snow = daily.snowfall_sum[i] || 0;
 
-    let status = t('score_fair'), color = "fair";
-    if (result.score >= 85) { status = t('score_epic'); color = "epic"; }
-    else if (result.score >= 65) { status = t('score_good'); color = "good"; }
-    else if (result.score < 45) { status = t('score_poor'); color = "bad"; }
+    const { color, text: status } = getScoreMetadata(result.score);
 
     const card = document.createElement('div');
     card.className = 'forecast-card';
