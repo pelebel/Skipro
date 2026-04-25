@@ -1,0 +1,77 @@
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - textbox "Search for a mountain or city" [ref=e5]:
+      - /placeholder: Rechercher...
+      - text: Denver
+    - button "Rechercher" [active] [ref=e6]
+  - alert [ref=e62]: Lieu non trouvé.
+  - generic [ref=e10]:
+    - generic [ref=e11]:
+      - paragraph [ref=e12]: En direct En temps réel
+      - generic [ref=e13]:
+        - heading "☁️ 1°C" [level=1] [ref=e63]
+        - generic [ref=e15]:
+          - generic [ref=e16]: "10"
+          - generic [ref=e17]: Médiocre
+      - paragraph [ref=e18]: Denver, États Unis
+    - generic [ref=e19]:
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - generic [ref=e66]: Aujourd'hui ☁️
+          - text: Direct + Prévisions
+        - generic [ref=e67]:
+          - text: 15° / 4°C
+          - text: 💨 16km/h Pas de neige
+        - generic [ref=e68]:
+          - generic [ref=e69]: "0"
+          - generic [ref=e70]: Médiocre
+      - generic [ref=e71]:
+        - generic [ref=e72]:
+          - generic [ref=e73]: Demain ❄️
+          - text: 26 avr.
+        - generic [ref=e74]:
+          - text: 14° / 5°C
+          - text: 💨 22km/h ❄️ 0.1cm
+        - generic [ref=e75]:
+          - generic [ref=e76]: "0"
+          - generic [ref=e77]: Médiocre
+      - generic [ref=e78]:
+        - generic [ref=e79]:
+          - generic [ref=e80]: lun. 🌧️Prime
+          - text: 27 avr.
+        - generic [ref=e81]:
+          - text: 15° / 5°C
+          - text: 💨 25km/h Pas de neige
+        - generic [ref=e82]:
+          - generic [ref=e83]: "20"
+          - generic [ref=e84]: Médiocre
+      - generic [ref=e85]:
+        - generic [ref=e86]:
+          - generic [ref=e87]: mar. ☁️Prime
+          - text: 28 avr.
+        - generic [ref=e88]:
+          - text: 17° / 8°C
+          - text: 💨 25km/h Pas de neige
+        - generic [ref=e89]:
+          - generic [ref=e90]: "60"
+          - generic [ref=e91]: Passable
+      - generic [ref=e92]:
+        - generic [ref=e93]:
+          - generic [ref=e94]: mer. 🌧️Prime
+          - text: 29 avr.
+        - generic [ref=e95]:
+          - text: 17° / 4°C
+          - text: 💨 32km/h Pas de neige
+        - generic [ref=e96]:
+          - generic [ref=e97]: "20"
+          - generic [ref=e98]: Médiocre
+      - generic [ref=e99]:
+        - generic [ref=e100]:
+          - generic [ref=e101]: jeu. ❄️
+          - text: 30 avr.
+        - generic [ref=e102]:
+          - text: 13° / 3°C
+          - text: 💨 12km/h ❄️ 0.2cm
+        - generic [ref=e103]:
+          - generic [ref=e104]: "0"
+          - generic [ref=e105]: Médiocre

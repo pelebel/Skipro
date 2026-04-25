@@ -1,0 +1,10 @@
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - textbox "Search for a mountain or city" [ref=e5]:
+      - /placeholder: Rechercher...
+      - text: <script>alert('xss')</script>
+    - button "Rechercher" [active] [ref=e6]
+  - alert [ref=e62]: Lieu non trouvé.
+  - generic [ref=e7]:
+    - paragraph [ref=e8]: Appuyez sur "Rechercher" ou saisissez une ville pour commencer.
+    - button "📍 Utiliser ma position" [ref=e9]

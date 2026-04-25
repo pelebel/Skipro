@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "mcp__brave-search__brave_web_search",
+      "Bash(git add:*)",
+      "Bash(state)",
+      "Bash(git commit -m 'Centralize state management and implement professional scoring algorithm:*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:www.snow-forecast.com)",
+      "WebFetch(domain:climate.weather.gc.ca)",
+      "WebFetch(domain:www.timeanddate.com)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }

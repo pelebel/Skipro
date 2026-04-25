@@ -1,0 +1,8 @@
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - textbox "Search for a mountain or city" [ref=e5]:
+      - /placeholder: Rechercher...
+    - button "Rechercher" [ref=e6]
+  - generic [ref=e7]:
+    - paragraph [ref=e8]: Appuyez sur "Rechercher" ou saisissez une ville pour commencer.
+    - button "📍 Utiliser ma position" [ref=e9]
