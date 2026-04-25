@@ -1,0 +1,12 @@
+- generic [active]:
+  - generic:
+    - status "Loading"
+    - generic:
+      - generic:
+        - textbox "Search for a mountain or city":
+          - /placeholder: Rechercher...
+          - text: Denver
+        - button "Rechercher"
+    - generic:
+      - paragraph: Appuyez sur "Rechercher" ou saisissez une ville pour commencer.
+      - button "📍 Utiliser ma position"

@@ -1,0 +1,7 @@
+[     468ms] [LOG] [Migration] Starting legacy message format migration... @ http://localhost:8080/bundle.js:58
+[     477ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8080/cors-proxy:0
+[     535ms] [LOG] [Migration] Starting legacy message format migration... @ http://localhost:8080/bundle.js:58
+[     545ms] [INFO] Server running in MODEL mode @ http://localhost:8080/bundle.js:27
+[     554ms] [LOG] User overrides after sync: [] @ http://localhost:8080/bundle.js:27
+[     557ms] [LOG] [Migration] No legacy messages found, marking as done @ http://localhost:8080/bundle.js:58
+[     557ms] [LOG] [Migration] No legacy messages found, marking as done @ http://localhost:8080/bundle.js:58

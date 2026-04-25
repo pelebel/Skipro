@@ -3,50 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    
+    <meta name="description" content="Real-time ski condition scoring for mountains worldwide.">
+    <link rel="icon" href="data:,">
+
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SkiPro">
 
-    
-   <title>SkiPro</title>
+    <title>SkiPro</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="app-container">
-        <div id="loadingSpinner" class="spinner"></div>
-        <form class="search-box" onsubmit="event.preventDefault(); getWeather()">
+        <div id="loadingSpinner" class="spinner" role="status" aria-label="Loading"></div>
+        <form class="search-box" id="searchForm">
             <div class="search-group">
                 <input type="text" id="cityInput" placeholder="Search mountains..." aria-label="Search for a mountain or city">
                 <button type="submit">Go</button>
             </div>
         </form>
 
-        <div id="errorMsg" class="error" data-i18n="error_not_found">Location not found.</div>
+        <div id="errorMsg" class="error" role="alert" data-i18n="error_not_found">Location not found.</div>
 
-        <div id="weatherDisplay" style="display: none;">
+        <div id="weatherDisplay" style="display: none;" aria-live="polite">
             <div class="live-header">
-                <p><span class="live-badge" data-i18n="live">Live</span> <span data-i1 idea="realtime" data-i18n="realtime">Real-time</span></p>
+                <p><span class="live-badge" data-i18n="live">Live</span> <span data-i18n="realtime">Real-time</span></p>
                 <div style="display: flex; align-items: center; gap: 20px; justify-content: center;">
                     <h1 id="liveTemp">--°C</h1>
-                    <div id="liveScoreContainer" class="score-num" style="display: none; font-size: 2rem; padding: 5px 15px; border-radius: 12px; background: var(--glass); border: 1px solid var(--glass-border); display: flex; flex-direction: column; align-items: center; line-height: 1;">
+                    <div id="liveScoreContainer" class="score-num" style="font-size: 2rem; padding: 5px 15px; border-radius: 12px; background: var(--glass); border: 1px solid var(--glass-border); display: flex; flex-direction: column; align-items: center; line-height: 1;">
                         <span id="liveScoreNum">--</span>
                         <span id="liveScoreText" style="font-size: 0.8rem; font-weight: normal; margin-top: 4px;">--</span>
                     </div>
                 </div>
                 <p id="locationName">---</p>
-            </div >
+            </div>
 
             <div class="forecast-list" id="forecastList"></div>
-        </div >
+        </div>
 
         <div id="placeholderText">
             <p data-i18n="welcome">Tap "Go" or enter a city to begin.</p>
-            <button onclick="autoLocate()" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--glass-border); margin-top: 10px;" data-i18n="use_location">
+            <button id="locateBtn" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--glass-border); margin-top: 10px;" data-i18n="use_location">
                 📍 Use My Location
             </button>
-        </div >
+        </div>
     </div>
 
     <script src="script.js"></script>

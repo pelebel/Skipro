@@ -1,0 +1,76 @@
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - textbox "Search for a mountain or city" [ref=e5]:
+      - /placeholder: Rechercher...
+      - text: Chamonix
+    - button "Rechercher" [active] [ref=e6]
+  - generic [ref=e10]:
+    - generic [ref=e11]:
+      - paragraph [ref=e12]: En direct En temps réel
+      - generic [ref=e13]:
+        - heading "🌤️ 19°C" [level=1] [ref=e14]
+        - generic [ref=e15]:
+          - generic [ref=e16]: "50"
+          - generic [ref=e17]: Passable
+      - paragraph [ref=e18]: Chamonix-Mont-Blanc, France
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - generic [ref=e22]: Aujourd'hui ☁️Prime
+          - text: Direct + Prévisions
+        - generic [ref=e23]:
+          - text: 20° / 8°C
+          - text: 💨 11km/h Pas de neige
+        - generic [ref=e24]:
+          - generic [ref=e25]: "80"
+          - generic [ref=e26]: Bon
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e29]: Demain ☁️Prime
+          - text: 26 avr.
+        - generic [ref=e30]:
+          - text: 19° / 10°C
+          - text: 💨 11km/h Pas de neige
+        - generic [ref=e31]:
+          - generic [ref=e32]: "20"
+          - generic [ref=e33]: Médiocre
+      - generic [ref=e34]:
+        - generic [ref=e35]:
+          - generic [ref=e36]: lun. 🌧️
+          - text: 27 avr.
+        - generic [ref=e37]:
+          - text: 14° / 11°C
+          - text: 💨 7km/h Pas de neige
+        - generic [ref=e38]:
+          - generic [ref=e39]: "0"
+          - generic [ref=e40]: Médiocre
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]: mar. 🌧️
+          - text: 28 avr.
+        - generic [ref=e44]:
+          - text: 18° / 11°C
+          - text: 💨 10km/h Pas de neige
+        - generic [ref=e45]:
+          - generic [ref=e46]: "0"
+          - generic [ref=e47]: Médiocre
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - generic [ref=e50]: mer. ☁️
+          - text: 29 avr.
+        - generic [ref=e51]:
+          - text: 20° / 11°C
+          - text: 💨 10km/h Pas de neige
+        - generic [ref=e52]:
+          - generic [ref=e53]: "0"
+          - generic [ref=e54]: Médiocre
+      - generic [ref=e55]:
+        - generic [ref=e56]:
+          - generic [ref=e57]: jeu. ☁️
+          - text: 30 avr.
+        - generic [ref=e58]:
+          - text: 20° / 12°C
+          - text: 💨 9km/h Pas de neige
+        - generic [ref=e59]:
+          - generic [ref=e60]: "0"
+          - generic [ref=e61]: Médiocre

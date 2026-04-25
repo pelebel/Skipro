@@ -14,7 +14,7 @@ SkiPro provides real-time weather data and a "Pro Score" (0-100) to determine th
 - **Pro Score Algorithm**: Located in `script.js` (`calculateProScore`). It implements a professional Ski Condition Index using wind chill, snow quality (humidity-based density proxy), and specific bonuses/penalties (e.g., Bluebird bonus, Melt-Freeze penalty).
 - **State Management**: Uses a centralized `state` object to track units, language, and cached weather/location data.
 - **UI Style**: iOS-inspired "Liquid" design with dynamic gradients and backdrop filters.
-- **Units**: Supports both Celsius and Fahrenheit.
+- **Units**: Celsius only.
 
 ## Development Guidelines
 - **Styling**: Follow the glassmorphism theme defined in `style.css`. Use CSS variables for colors and glass effects.
